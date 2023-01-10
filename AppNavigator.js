@@ -5,6 +5,8 @@ import { BottomNavigation, BottomNavigationTab } from "@ui-kitten/components";
 import { HomeScreen } from "./screens/HomeScreen";
 import { CurrentSessionScreen } from "./screens/CurrentSessionScreen";
 import { SettingsScreen } from "./screens/SettingsScreen";
+import { SessionContext } from "./contexts/SessionContext";
+import { getSession } from "./database/sessionStorage";
 
 const { Navigator, Screen } = createBottomTabNavigator();
 
@@ -27,8 +29,14 @@ const TabNavigator = () => (
   </Navigator>
 );
 
-export const AppNavigator = () => (
-  <NavigationContainer>
-    <TabNavigator />
-  </NavigationContainer>
-);
+export const AppNavigator = () => {
+  const [session, setSession] = React.useState(getSession());
+
+  return (
+    <NavigationContainer>
+      <SessionContext.Provider value={{ session, setSession }}>
+        <TabNavigator />
+      </SessionContext.Provider>
+    </NavigationContainer>
+  );
+};
