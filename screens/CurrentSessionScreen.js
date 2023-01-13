@@ -6,6 +6,8 @@ import {
   Card,
   Button,
   Icon,
+  OverflowMenu,
+  MenuItem,
 } from "@ui-kitten/components";
 import { SessionContext } from "../contexts/SessionContext";
 import { DividerList } from "../components/DividerList";
@@ -56,6 +58,14 @@ const PlaylistTable = () => {
   const [activePlaylist, setActivePlaylists] = React.useState([]);
   const [allPlaylists, setAllPlaylists] = React.useState([]);
 
+  const [selectedIndex, setSelectedIndex] = React.useState(null);
+  const [visible, setVisible] = React.useState(false);
+
+  const onItemSelect = (index) => {
+    setSelectedIndex(index);
+    setVisible(false);
+  };
+
   const updatePlaylists = async () => {
     var playlists = await Spotify.getPlaylists();
     setAllPlaylists(() => playlists);
@@ -67,16 +77,35 @@ const PlaylistTable = () => {
     })();
   }, []);
 
+  const renderToggleButton = () => (
+    <Button
+      style={styles.button}
+      appearance="ghost"
+      accessoryLeft={PlusIcon}
+      onPress={async () => {
+        setVisible(true);
+        await updatePlaylists();
+      }}
+    />
+  );
+
   return (
     <Card style={styles.bodyCard} status="primary">
       <Layout style={styles.buttonBar}>
         <Text category="h3">Linked Playlists</Text>
         <Layout style={styles.spacer} />
-        <Button
-          style={styles.button}
-          appearance="ghost"
-          accessoryLeft={PlusIcon}
-        />
+
+        <OverflowMenu
+          anchor={renderToggleButton}
+          visible={visible}
+          selectedIndex={selectedIndex}
+          onSelect={onItemSelect}
+          onBackdropPress={() => setVisible(false)}
+        >
+          {allPlaylists.map((playlist, index) => (
+            <MenuItem title={playlist.name} key={index} />
+          ))}
+        </OverflowMenu>
       </Layout>
       <Layout style={{ paddingBottom: "4%" }}></Layout>
       <DividerList data={activePlaylist} />
