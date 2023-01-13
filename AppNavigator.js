@@ -7,8 +7,9 @@ import { CurrentSessionScreen } from "./screens/CurrentSessionScreen";
 import { SettingsScreen } from "./screens/SettingsScreen";
 import { SessionContext } from "./contexts/SessionContext";
 import { AuthContext } from "./contexts/AuthContext";
+import { refreshTokens } from "./Auth";
 
-const { Navigator, Screen } = createBottomTabNavigator();
+const { Navigator, Screen, Group } = createBottomTabNavigator();
 
 const BottomTabBar = ({ navigation, state }) => (
   <BottomNavigation
@@ -23,15 +24,28 @@ const BottomTabBar = ({ navigation, state }) => (
 
 const TabNavigator = () => (
   <Navigator tabBar={(props) => <BottomTabBar {...props} />}>
-    <Screen name="Session" component={CurrentSessionScreen} />
-    <Screen name="History" component={HistoryScreen} />
-    <Screen name="Settings" component={SettingsScreen} />
+    <Group screenOptions={{ headerStyle: { backgroundColor: "#25DB51" } }}>
+      <Screen name="Session" component={CurrentSessionScreen} />
+      <Screen name="History" component={HistoryScreen} />
+      <Screen name="Settings" component={SettingsScreen} />
+    </Group>
   </Navigator>
 );
 
 export const AppNavigator = () => {
   const [session, setSession] = React.useState({});
   const [auth, setAuth] = React.useState({});
+
+  React.useEffect(() => {
+    refreshTokens();
+  }, []);
+
+  React.useEffect(() => {
+    const interval = setInterval(async () => {
+      await refreshTokens();
+    }, 300000);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <NavigationContainer>

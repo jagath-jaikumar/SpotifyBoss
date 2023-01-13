@@ -1,8 +1,20 @@
 import React from "react";
-import { Layout, Text, Toggle } from "@ui-kitten/components";
+import { Layout, Text, Toggle, Card } from "@ui-kitten/components";
 import { SessionContext } from "../contexts/SessionContext";
 import { DividerList } from "../components/DividerList";
-import SpotifyLoginButton from "../components/SpotifyLoginButton";
+import * as Spotify from "../Spotify";
+
+import { StyleSheet } from "react-native";
+const styles = StyleSheet.create({
+  bodyCard: {
+    margin: 2,
+    maxHeight: "40%",
+  },
+  container: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+  },
+});
 
 const dummyPlaylistData = new Array(5).fill({
   title: "Playlist ~",
@@ -21,26 +33,47 @@ const SessionView = () => {
   const [playlists, setPlaylists] = React.useState(dummyPlaylistData);
   const [queue, setQueue] = React.useState(dummyQueueData);
 
+  React.useEffect(() => {
+    (async () => {
+      var playlists = await Spotify.getPlaylists();
+      setPlaylists(() => playlists);
+
+      var queue = await Spotify.getQueue();
+      setQueue(() => queue);
+    })();
+  }, []);
+
   return (
     <>
-      <Text>Spotify</Text>
-      <SpotifyLoginButton />
+      <Card style={styles.bodyCard} status="primary">
+        <Text category="h3">Queue</Text>
+        <Layout style={{ paddingBottom: "4%" }}></Layout>
+        <DividerList data={queue} />
+      </Card>
+      <Layout style={{ paddingBottom: "2%" }}></Layout>
 
-      <Text>Queue</Text>
-      <DividerList data={queue} />
+      <Card style={styles.bodyCard} status="primary">
+        <Text category="h3">Linked Playlists</Text>
+        <Layout style={{ paddingBottom: "4%" }}></Layout>
+        <DividerList data={playlists} />
+      </Card>
 
-      <Text>Linked Playlists</Text>
-      <DividerList data={playlists} />
+      <Layout style={{ paddingBottom: "2%" }}></Layout>
 
-      <Text>Settings</Text>
-      <Toggle
-        checked={dontReuseSongs}
-        onChange={(isChecked) => {
-          setDontReuseSongs(isChecked);
-        }}
-      >
-        {(evaProps) => <Text {...evaProps}>Don't re use songs</Text>}
-      </Toggle>
+      <Card style={styles.settingsCard} status="info">
+        <Text category="h3">Session Settings</Text>
+        <Layout style={{ paddingBottom: "4%" }}></Layout>
+        <Layout style={styles.container} level="1">
+          <Toggle
+            checked={dontReuseSongs}
+            onChange={(isChecked) => {
+              setDontReuseSongs(isChecked);
+            }}
+          >
+            {(evaProps) => <Text {...evaProps}>Don't re use songs</Text>}
+          </Toggle>
+        </Layout>
+      </Card>
     </>
   );
 };
