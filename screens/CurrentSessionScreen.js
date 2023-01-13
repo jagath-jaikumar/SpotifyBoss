@@ -53,7 +53,19 @@ const QueueTable = () => {
 };
 
 const PlaylistTable = () => {
-  const [playlists, setPlaylists] = React.useState([]);
+  const [activePlaylist, setActivePlaylists] = React.useState([]);
+  const [allPlaylists, setAllPlaylists] = React.useState([]);
+
+  const updatePlaylists = async () => {
+    var playlists = await Spotify.getPlaylists();
+    setAllPlaylists(() => playlists);
+  };
+
+  React.useEffect(() => {
+    (async () => {
+      await updatePlaylists();
+    })();
+  }, []);
 
   return (
     <Card style={styles.bodyCard} status="primary">
@@ -67,7 +79,7 @@ const PlaylistTable = () => {
         />
       </Layout>
       <Layout style={{ paddingBottom: "4%" }}></Layout>
-      <DividerList data={playlists} />
+      <DividerList data={activePlaylist} />
     </Card>
   );
 };
