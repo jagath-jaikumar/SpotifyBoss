@@ -1,10 +1,112 @@
 import React from "react";
-import { Layout, Text, Toggle, Card } from "@ui-kitten/components";
+import {
+  Layout,
+  Text,
+  Toggle,
+  Card,
+  Button,
+  Icon,
+} from "@ui-kitten/components";
 import { SessionContext } from "../contexts/SessionContext";
 import { DividerList } from "../components/DividerList";
 import * as Spotify from "../Spotify";
-
 import { StyleSheet } from "react-native";
+
+const RefreshIcon = (props) => <Icon {...props} name="refresh-outline" />;
+const PlusIcon = (props) => <Icon {...props} name="plus-outline" />;
+
+const QueueTable = () => {
+  const [queue, setQueue] = React.useState([]);
+
+  const updateQueue = async () => {
+    var queue = await Spotify.getQueue();
+    setQueue(() => queue);
+  };
+
+  React.useEffect(() => {
+    (async () => {
+      await updateQueue();
+    })();
+  }, []);
+
+  return (
+    <Card style={styles.bodyCard} status="primary">
+      <Layout style={styles.buttonBar}>
+        <Text category="h3">Queue</Text>
+        <Layout style={styles.spacer} />
+        <Button
+          style={styles.button}
+          appearance="ghost"
+          accessoryLeft={RefreshIcon}
+          onPress={updateQueue}
+        />
+        <Button
+          style={styles.button}
+          appearance="ghost"
+          accessoryLeft={PlusIcon}
+        />
+      </Layout>
+      <Layout style={{ paddingBottom: "4%" }}></Layout>
+      <DividerList data={queue} />
+    </Card>
+  );
+};
+
+const PlaylistTable = () => {
+  const [playlists, setPlaylists] = React.useState([]);
+
+  return (
+    <Card style={styles.bodyCard} status="primary">
+      <Layout style={styles.buttonBar}>
+        <Text category="h3">Linked Playlists</Text>
+        <Layout style={styles.spacer} />
+        <Button
+          style={styles.button}
+          appearance="ghost"
+          accessoryLeft={PlusIcon}
+        />
+      </Layout>
+      <Layout style={{ paddingBottom: "4%" }}></Layout>
+      <DividerList data={playlists} />
+    </Card>
+  );
+};
+
+const SettingsTable = () => {
+  const [dontReuseSongs, setDontReuseSongs] = React.useState(true);
+
+  return (
+    <Card style={styles.settingsCard} status="info">
+      <Text category="h3">Session Settings</Text>
+      <Layout style={{ paddingBottom: "4%" }}></Layout>
+      <Layout style={styles.container} level="1">
+        <Toggle
+          checked={dontReuseSongs}
+          onChange={(isChecked) => {
+            setDontReuseSongs(isChecked);
+          }}
+        >
+          {(evaProps) => <Text {...evaProps}>Don't re use songs</Text>}
+        </Toggle>
+      </Layout>
+    </Card>
+  );
+};
+
+export const CurrentSessionScreen = () => {
+  return (
+    <>
+      <Layout style={{ flex: 1 }}>
+        <QueueTable />
+        <Layout style={{ paddingBottom: "2%" }}></Layout>
+        <PlaylistTable />
+        <Layout style={{ paddingBottom: "2%" }}></Layout>
+        <SettingsTable />
+      </Layout>
+    </>
+  );
+};
+
 const styles = StyleSheet.create({
   bodyCard: {
     margin: 2,
@@ -14,74 +116,11 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
   },
+  buttonBar: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  spacer: {
+    flex: 1,
+  },
 });
-
-const dummyPlaylistData = new Array(5).fill({
-  title: "Playlist ~",
-  description: "Description for Item",
-});
-
-const dummyQueueData = new Array(5).fill({
-  title: "Queue ~",
-  description: "Description for Item",
-});
-
-const SessionView = () => {
-  const { session, setSession } = React.useContext(SessionContext);
-
-  const [dontReuseSongs, setDontReuseSongs] = React.useState(true);
-  const [playlists, setPlaylists] = React.useState(dummyPlaylistData);
-  const [queue, setQueue] = React.useState(dummyQueueData);
-
-  React.useEffect(() => {
-    (async () => {
-      var playlists = await Spotify.getPlaylists();
-      setPlaylists(() => playlists);
-
-      var queue = await Spotify.getQueue();
-      setQueue(() => queue);
-    })();
-  }, []);
-
-  return (
-    <>
-      <Card style={styles.bodyCard} status="primary">
-        <Text category="h3">Queue</Text>
-        <Layout style={{ paddingBottom: "4%" }}></Layout>
-        <DividerList data={queue} />
-      </Card>
-      <Layout style={{ paddingBottom: "2%" }}></Layout>
-
-      <Card style={styles.bodyCard} status="primary">
-        <Text category="h3">Linked Playlists</Text>
-        <Layout style={{ paddingBottom: "4%" }}></Layout>
-        <DividerList data={playlists} />
-      </Card>
-
-      <Layout style={{ paddingBottom: "2%" }}></Layout>
-
-      <Card style={styles.settingsCard} status="info">
-        <Text category="h3">Session Settings</Text>
-        <Layout style={{ paddingBottom: "4%" }}></Layout>
-        <Layout style={styles.container} level="1">
-          <Toggle
-            checked={dontReuseSongs}
-            onChange={(isChecked) => {
-              setDontReuseSongs(isChecked);
-            }}
-          >
-            {(evaProps) => <Text {...evaProps}>Don't re use songs</Text>}
-          </Toggle>
-        </Layout>
-      </Card>
-    </>
-  );
-};
-
-export const CurrentSessionScreen = () => (
-  <>
-    <Layout style={{ flex: 1 }}>
-      <SessionView />
-    </Layout>
-  </>
-);

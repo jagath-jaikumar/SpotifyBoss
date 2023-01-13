@@ -18,13 +18,9 @@ export const getPlaylists = async (options) => {
   return x.items;
 };
 
-export const getRecentlyPlayed = async (options) => {
-  var x = await makeGetRequest("me/playlists");
-  return x.items;
-};
+export const getRecentlyPlayed = async (options) => {};
 
 export const getQueue = async () => {
   var x = await makeGetRequest("me/player/queue");
-  console.log(x);
   return x.queue;
 };
